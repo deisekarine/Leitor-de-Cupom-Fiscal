@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Escanear Cupom</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    #reader { width: 100%; max-width: 500px; margin: auto; }
+    #resultado { margin-top: 20px; font-size: 18px; word-break: break-word; }
+  </style>
+</head>
+<body>
+<h2>📷 Escanear Cupom</h2>
+<div id="reader"></div>
+<div id="resultado">Aponte a câmera para o QR Code do cupom.</div>
+
+<script>
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbw0JNhYTHhhoOlqxk11Kqj7u1aGEF86PkV8ehcaWcpmLrznTlTOeElAuRTG0k8__1Ujjg/exec";
+
+function sucesso(qrCodeMessage) {
+  document.getElementById("resultado").innerHTML = "Lendo cupom, aguarde...";
+  scanner.clear();
+
+  fetch(URL_SCRIPT, {
+    method: "POST",
+    body: JSON.stringify({ link: qrCodeMessage })
+  })
+  .then(res => res.text())
+  .then(valor => {
+    document.getElementById("resultado").innerHTML =
+      "✅ Valor enviado: R$ " + valor;
+  })
+  .catch(() => {
+    document.getElementById("resultado").innerHTML = "❌ Erro ao enviar.";
+  });
+}
+
+function erro(errorMessage) {}
+
+const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+scanner.render(sucesso, erro);
+</script>
+</body>
+</html>
