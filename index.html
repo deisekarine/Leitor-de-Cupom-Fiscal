@@ -19,17 +19,17 @@
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbw0JNhYTHhhoOlqxk11Kqj7u1aGEF86PkV8ehcaWcpmLrznTlTOeElAuRTG0k8__1Ujjg/exec";
 
 function sucesso(qrCodeMessage) {
-  document.getElementById("resultado").innerHTML = "Lendo cupom, aguarde...";
+  document.getElementById("resultado").innerHTML = "Enviando cupom...";
   scanner.clear();
 
   fetch(URL_SCRIPT, {
     method: "POST",
+    mode: "no-cors",
     body: JSON.stringify({ link: qrCodeMessage })
   })
-  .then(res => res.text())
-  .then(valor => {
+  .then(() => {
     document.getElementById("resultado").innerHTML =
-      "✅ Valor enviado: R$ " + valor;
+      "✅ Cupom enviado! Confira na planilha.";
   })
   .catch(() => {
     document.getElementById("resultado").innerHTML = "❌ Erro ao enviar.";
