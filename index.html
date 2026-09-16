@@ -13,6 +13,7 @@
       background: #111;
       font-family: -apple-system, Arial, sans-serif;
       color: white;
+      overflow: hidden;
     }
     #tela-inicial {
       display: flex;
@@ -40,6 +41,7 @@
     #reader {
       width: 100vw;
       height: 100vh;
+      position: relative;
     }
     #reader video {
       width: 100% !important;
@@ -55,15 +57,15 @@
       font-size: 18px;
       text-align: center;
       word-break: break-word;
+      z-index: 10;
     }
-    #hidden-fields, #qr-shaded-region { border-radius: 20px !important; }
   </style>
 </head>
 <body>
 
 <div id="tela-inicial">
   <h1>📷 Escanear Cupom</h1>
-  <button id="botaoScan" onclick="iniciarScanner()">Escanear</button>
+  <button id="botaoScan" onclick="iniciarScanner()">scan</button>
 </div>
 
 <div id="reader" style="display:none;"></div>
@@ -72,26 +74,42 @@
 <script>
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbw0JNhYTHhhoOlqxk11Kqj7u1aGEF86PkV8ehcaWcpmLrznTlTOeElAuRTG0k8__1Ujjg/exec";
 
-let scanner;
+let html5QrCode;
+let scannerAtivo = false;
 
 function iniciarScanner() {
   document.getElementById("tela-inicial").style.display = "none";
   document.getElementById("reader").style.display = "block";
   document.getElementById("resultado").style.display = "block";
-  document.getElementById("resultado").innerHTML = "Aponte para o QR Code do cupom";
+  document.getElementById("resultado").innerHTML = "Abrindo câmera...";
 
-  scanner = new Html5QrcodeScanner("reader", {
-    fps: 10,
-    qrbox: { width: 280, height: 280 },
-    rememberLastUsedCamera: true
-  }, false);
+  html5QrCode = new Html5Qrcode("reader");
 
-  scanner.render(sucesso, erro);
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 280, height: 280 } },
+    sucesso,
+    erro
+  ).then(() => {
+    scannerAtivo = true;
+    document.getElementById("resultado").innerHTML = "Aponte para o QR Code do cupom";
+  }).catch((err) => {
+    document.getElementById("resultado").innerHTML = "❌ Não foi possível abrir a câmera. Feche outros apps que usem a câmera e tente de novo.";
+  });
+}
+
+function pararScanner() {
+  if (scannerAtivo && html5QrCode) {
+    html5QrCode.stop().then(() => {
+      html5QrCode.clear();
+      scannerAtivo = false;
+    }).catch(() => {});
+  }
 }
 
 function sucesso(qrCodeMessage) {
   document.getElementById("resultado").innerHTML = "Enviando cupom...";
-  scanner.clear();
+  pararScanner();
   document.getElementById("reader").style.display = "none";
 
   fetch(URL_SCRIPT, {
