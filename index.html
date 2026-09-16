@@ -1,26 +1,98 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>Escanear Cupom</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-    #reader { width: 100%; max-width: 500px; margin: auto; }
-    #resultado { margin-top: 20px; font-size: 18px; word-break: break-word; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #111;
+      font-family: -apple-system, Arial, sans-serif;
+      color: white;
+    }
+    #tela-inicial {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+    #tela-inicial h1 {
+      font-size: 26px;
+      margin-bottom: 40px;
+    }
+    #botaoScan {
+      background: #2ecc71;
+      color: white;
+      border: none;
+      padding: 22px 50px;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    #reader {
+      width: 100vw;
+      height: 100vh;
+    }
+    #reader video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+    }
+    #resultado {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.75);
+      padding: 20px;
+      font-size: 18px;
+      text-align: center;
+      word-break: break-word;
+    }
+    #hidden-fields, #qr-shaded-region { border-radius: 20px !important; }
   </style>
 </head>
 <body>
-<h2>📷 Escanear Cupom</h2>
-<div id="reader"></div>
-<div id="resultado">Aponte a câmera para o QR Code do cupom.</div>
+
+<div id="tela-inicial">
+  <h1>📷 Escanear Cupom</h1>
+  <button id="botaoScan" onclick="iniciarScanner()">Escanear</button>
+</div>
+
+<div id="reader" style="display:none;"></div>
+<div id="resultado" style="display:none;"></div>
 
 <script>
 const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbw0JNhYTHhhoOlqxk11Kqj7u1aGEF86PkV8ehcaWcpmLrznTlTOeElAuRTG0k8__1Ujjg/exec";
 
+let scanner;
+
+function iniciarScanner() {
+  document.getElementById("tela-inicial").style.display = "none";
+  document.getElementById("reader").style.display = "block";
+  document.getElementById("resultado").style.display = "block";
+  document.getElementById("resultado").innerHTML = "Aponte para o QR Code do cupom";
+
+  scanner = new Html5QrcodeScanner("reader", {
+    fps: 10,
+    qrbox: { width: 280, height: 280 },
+    rememberLastUsedCamera: true
+  }, false);
+
+  scanner.render(sucesso, erro);
+}
+
 function sucesso(qrCodeMessage) {
   document.getElementById("resultado").innerHTML = "Enviando cupom...";
   scanner.clear();
+  document.getElementById("reader").style.display = "none";
 
   fetch(URL_SCRIPT, {
     method: "POST",
@@ -37,9 +109,7 @@ function sucesso(qrCodeMessage) {
 }
 
 function erro(errorMessage) {}
-
-const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-scanner.render(sucesso, erro);
 </script>
+
 </body>
 </html>
