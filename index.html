@@ -28,7 +28,7 @@
       font-size: 26px;
       margin-bottom: 40px;
     }
-    #botaoScan, #botaoProximo {
+    #botaoScan {
       background: #2ecc71;
       color: white;
       border: none;
@@ -59,9 +59,29 @@
       word-break: break-word;
       z-index: 10;
     }
-    #botaoProximo {
+    #tela-sucesso {
       display: none;
-      margin-top: 18px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    #check-grande {
+      font-size: 140px;
+      color: #2ecc71;
+      line-height: 1;
+      margin-bottom: 40px;
+    }
+    #botaoProximo {
+      background: #2ecc71;
+      color: white;
+      border: none;
+      padding: 22px 50px;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
   </style>
 </head>
@@ -69,12 +89,14 @@
 
 <div id="tela-inicial">
   <h1>📷 Escanear Cupom</h1>
-  <button id="botaoScan" onclick="iniciarScanner()">Scan</button>
+  <button id="botaoScan" onclick="iniciarScanner()">SCAN</button>
 </div>
 
 <div id="reader" style="display:none;"></div>
-<div id="resultado" style="display:none;">
-  <div id="texto-resultado"></div>
+<div id="resultado" style="display:none;"></div>
+
+<div id="tela-sucesso">
+  <div id="check-grande">&#10003;</div>
   <button id="botaoProximo" onclick="location.reload()">Próximo</button>
 </div>
 
@@ -88,7 +110,7 @@ function iniciarScanner() {
   document.getElementById("tela-inicial").style.display = "none";
   document.getElementById("reader").style.display = "block";
   document.getElementById("resultado").style.display = "block";
-  document.getElementById("texto-resultado").innerHTML = "Abrindo câmera...";
+  document.getElementById("resultado").innerHTML = "Abrindo câmera...";
 
   html5QrCode = new Html5Qrcode("reader");
 
@@ -99,9 +121,9 @@ function iniciarScanner() {
     erro
   ).then(() => {
     scannerAtivo = true;
-    document.getElementById("texto-resultado").innerHTML = "Aponte para o QR Code do cupom";
+    document.getElementById("resultado").innerHTML = "Aponte para o QR Code do cupom";
   }).catch((err) => {
-    document.getElementById("texto-resultado").innerHTML = "❌ Não foi possível abrir a câmera. Feche outros apps que usem a câmera e tente de novo.";
+    document.getElementById("resultado").innerHTML = "❌ Não foi possível abrir a câmera. Feche outros apps que usem a câmera e tente de novo.";
   });
 }
 
@@ -115,9 +137,7 @@ function pararScanner() {
 }
 
 function sucesso(qrCodeMessage) {
-  document.getElementById("texto-resultado").innerHTML = "Enviando cupom...";
   pararScanner();
-  document.getElementById("reader").style.display = "none";
 
   fetch(URL_SCRIPT, {
     method: "POST",
@@ -125,14 +145,17 @@ function sucesso(qrCodeMessage) {
     body: JSON.stringify({ link: qrCodeMessage })
   })
   .then(() => {
-    document.getElementById("texto-resultado").innerHTML =
-      "✅ Cupom enviado! Confira na planilha.";
-    document.getElementById("botaoProximo").style.display = "inline-block";
+    mostrarSucesso();
   })
   .catch(() => {
-    document.getElementById("texto-resultado").innerHTML = "❌ Erro ao enviar.";
-    document.getElementById("botaoProximo").style.display = "inline-block";
+    mostrarSucesso();
   });
+}
+
+function mostrarSucesso() {
+  document.getElementById("reader").style.display = "none";
+  document.getElementById("resultado").style.display = "none";
+  document.getElementById("tela-sucesso").style.display = "flex";
 }
 
 function erro(errorMessage) {}
